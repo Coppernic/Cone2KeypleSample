@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">C-One² Keyple Sample</string>
+
+    <string name="waiting_for_a_smart_card">Waiting for a smart card…</string>
+    <string name="smart_card_detected">A smart card has been detected</string>
+    <string name="smart_card_removed">Smart card has been removed</string>
+    <string name="se_matched">SE matched</string>
+</resources>
