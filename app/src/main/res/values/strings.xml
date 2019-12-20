@@ -5,4 +5,5 @@
     <string name="smart_card_detected">A smart card has been detected</string>
     <string name="smart_card_removed">Smart card has been removed</string>
     <string name="se_matched">SE matched</string>
+    <string name="power">Power</string>
 </resources>
