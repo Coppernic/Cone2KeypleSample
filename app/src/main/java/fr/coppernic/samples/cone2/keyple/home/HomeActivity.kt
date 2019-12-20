@@ -4,6 +4,10 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
 import android.text.style.ForegroundColorSpan
+import android.view.ContextMenu
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import fr.coppernic.samples.cone2.keyple.R
@@ -264,6 +268,21 @@ class HomeActivity : AppCompatActivity() {
         super.onStop()
         plugin.removeObserver(pluginObserver)
         (seReader as ObservableReader).removeObserver(readerObserver)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        val id = item!!.itemId
+
+        if (id == R.id.action_clear_all) {
+            tvLogs.text = ""
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     /**
