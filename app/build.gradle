@@ -20,7 +20,7 @@ apply plugin: 'fr.coppernic.android'
 
 repositories {
     mavenLocal()
-    maven { url 'http://arti-01.coppernic.local:8081/artifactory/libs-release' }
+    maven { url 'https://artifactory.coppernic.fr/artifactory/libs-release' }
     google()
     jcenter()
     mavenCentral()
@@ -92,9 +92,9 @@ dependencies {
     implementation 'fr.coppernic.sdk.core:CpcCore:1.8.18'
 
     // Keyple
-    implementation group: 'org.eclipse.keyple', name: 'keyple-java-core', version: '0.8.0-20191213-SNAPSHOT'
-    implementation group: 'org.eclipse.keyple', name: 'keyple-java-calypso', version: '0.8.0-20191213-SNAPSHOT'
-    implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.0-20191219-SNAPSHOT'
+    implementation group: 'org.eclipse.keyple', name: 'keyple-java-core', version: '0.8.0-20200103-SNAPSHOT'
+    implementation group: 'org.eclipse.keyple', name: 'keyple-java-calypso', version: '0.8.0-20200103-SNAPSHOT'
+    implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.0-20200108'
 
     // Ui
     implementation 'fr.coppernic.lib:splash:0.2.1'
