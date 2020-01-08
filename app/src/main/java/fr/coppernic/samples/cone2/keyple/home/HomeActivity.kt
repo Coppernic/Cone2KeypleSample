@@ -249,13 +249,6 @@ class HomeActivity : AppCompatActivity() {
         } catch (e: KeyplePluginInstantiationException) {
             appendColoredText(tvLogs, e.message!!, Color.RED)
         }
-
-        floatingActionButton.setOnClickListener {
-            //(seReader as ObservableReader).stopSeDetection()
-            // Notifies the end of process
-            Timber.d("notifySeProcessed")
-            (seReader as ObservableReader).notifySeProcessed()
-        }
     }
 
     override fun onStart() {
