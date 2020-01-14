@@ -4,10 +4,8 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
 import android.text.style.ForegroundColorSpan
-import android.view.ContextMenu
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import fr.coppernic.samples.cone2.keyple.R
@@ -15,7 +13,6 @@ import kotlinx.android.synthetic.main.activity_main.*
 import org.eclipse.keyple.calypso.command.po.parser.ReadDataStructure
 import org.eclipse.keyple.calypso.command.po.parser.ReadRecordsRespPars
 import org.eclipse.keyple.calypso.command.sam.SamRevision.C1
-import org.eclipse.keyple.calypso.command.sam.SamRevision.S1D
 import org.eclipse.keyple.calypso.transaction.*
 import org.eclipse.keyple.core.selection.SeSelection
 import org.eclipse.keyple.core.seproxy.ChannelControl
@@ -30,7 +27,6 @@ import org.eclipse.keyple.core.util.ByteArrayUtil
 import org.eclipse.keyple.plugin.android.cone2.Cone2Factory
 import org.eclipse.keyple.plugin.android.cone2.Cone2Plugin
 import timber.log.Timber
-import java.util.concurrent.atomic.AtomicBoolean
 
 
 class HomeActivity : AppCompatActivity() {
@@ -69,9 +65,18 @@ class HomeActivity : AppCompatActivity() {
 
                 (seReader as ObservableReader).startSeDetection(ObservableReader.PollingMode.REPEATING)
             }
-            PluginEvent.EventType.READER_DISCONNECTED -> appendColoredText(tvLogs,
-                    "Readers have been disconnected",
-                    Color.BLUE)
+            PluginEvent.EventType.READER_DISCONNECTED -> {
+                appendColoredText(tvLogs,
+                        "Readers have been disconnected",
+                        Color.BLUE)
+                appendColoredText(tvLogs, "\n", Color.BLACK)
+                appendColoredText(tvLogs,
+                        LINE_SEPARATOR,
+                        Color.BLACK)
+            }
+            null -> {
+
+            }
         }
     }
 
@@ -106,6 +111,8 @@ class HomeActivity : AppCompatActivity() {
                     appendColoredText(tvLogs,
                             LINE_SEPARATOR,
                             Color.BLACK)
+                }
+                null -> {
                 }
             }
         }
@@ -160,9 +167,9 @@ class HomeActivity : AppCompatActivity() {
                     samResource, SecuritySettings())
 
             /*
-                             * Prepare the reading order and keep the associated parser for later use once the
-                             * transaction has been processed.
-                             */
+             * Prepare the reading order and keep the associated parser for later use once the
+             * transaction has been processed.
+             */
             val readEventLogParserIndex = poTransaction.prepareReadRecordsCmd(
                     CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
                     CalypsoClassicInfo.RECORD_NUMBER_1,
@@ -171,8 +178,8 @@ class HomeActivity : AppCompatActivity() {
                             CalypsoClassicInfo.RECORD_NUMBER_1))
 
             /*
-                             * Open Session for the debit key
-                             */
+             * Open Session for the debit key
+             */
             var poProcessStatus = poTransaction.processOpening(
                     PoTransaction.ModificationMode.ATOMIC,
                     PoTransaction.SessionAccessLevel.SESSION_LVL_DEBIT, 0.toByte(), 0.toByte())
@@ -185,9 +192,9 @@ class HomeActivity : AppCompatActivity() {
                         Color.RED)
             }
             /*
-                             * Prepare the reading order and keep the associated parser for later use once the
-                             * transaction has been processed.
-                             */
+             * Prepare the reading order and keep the associated parser for later use once the
+             * transaction has been processed.
+             */
             val readEventLogParserIndexBis = poTransaction.prepareReadRecordsCmd(
                     CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
                     CalypsoClassicInfo.RECORD_NUMBER_1,
