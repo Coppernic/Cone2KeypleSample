@@ -64,6 +64,8 @@ class HomeActivity : AppCompatActivity() {
                         Color.BLACK)
 
                 (seReader as ObservableReader).startSeDetection(ObservableReader.PollingMode.REPEATING)
+
+                enableSwPower(true)
             }
             PluginEvent.EventType.READER_DISCONNECTED -> {
                 appendColoredText(tvLogs,
@@ -73,6 +75,7 @@ class HomeActivity : AppCompatActivity() {
                 appendColoredText(tvLogs,
                         LINE_SEPARATOR,
                         Color.BLACK)
+                enableSwPower(true)
             }
             null -> {
 
@@ -247,6 +250,7 @@ class HomeActivity : AppCompatActivity() {
 
         // Manages power switch
         swPower.setOnCheckedChangeListener { _, isChecked ->
+            enableSwPower(false)
             powerReaders(isChecked)
         }
 
@@ -386,6 +390,12 @@ class HomeActivity : AppCompatActivity() {
 
             val spannableText = tv.text as Spannable
             spannableText.setSpan(ForegroundColorSpan(color), start, end, 0)
+        }
+    }
+
+    private fun enableSwPower (on: Boolean) {
+        runOnUiThread {
+            swPower.isEnabled = on
         }
     }
 }
