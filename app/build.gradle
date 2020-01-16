@@ -94,7 +94,7 @@ dependencies {
     // Keyple
     implementation group: 'org.eclipse.keyple', name: 'keyple-java-core', version: '0.8.0-20200103-SNAPSHOT'
     implementation group: 'org.eclipse.keyple', name: 'keyple-java-calypso', version: '0.8.0-20200103-SNAPSHOT'
-    implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.0-20200114'
+    implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.0-20200116'
 
     // Ui
     implementation 'fr.coppernic.lib:splash:0.2.1'
