@@ -1,4 +1,4 @@
-package fr.coppernic.samples.cone2.keyple
+package fr.coppernic.samples.keyple
 
 import android.app.Application
 import android.util.Log
@@ -7,9 +7,9 @@ import fr.bipi.tressence.file.FileLoggerTree
 import fr.bipi.tressence.sentry.SentryBreadcrumbTree
 import fr.bipi.tressence.sentry.SentryEventTree
 import fr.coppernic.sdk.utils.helpers.OsHelper
-import fr.coppernic.samples.cone2.keyple.BuildConfig.DEBUG
-import fr.coppernic.samples.cone2.keyple.di.log.timberLogger
-import fr.coppernic.samples.cone2.keyple.di.modules.appModule
+import fr.coppernic.samples.keyple.BuildConfig.DEBUG
+import fr.coppernic.samples.keyple.di.log.timberLogger
+import fr.coppernic.samples.keyple.di.modules.appModule
 import io.sentry.Sentry
 import io.sentry.SentryUncaughtExceptionHandler
 import io.sentry.android.AndroidSentryClientFactory
@@ -70,8 +70,8 @@ class App : Application() {
             SentryUncaughtExceptionHandler.setup()
 
             // Do not send log to itself
-            Timber.plant(SentryBreadcrumbTree(Log.VERBOSE).withFilter(TagFilter("^(?!.*(Sentry|App)).*")))
-            Timber.plant(SentryEventTree(Log.ERROR).withFilter(TagFilter("^(?!.*(Sentry|App)).*")))
+            Timber.plant(SentryBreadcrumbTree(Log.VERBOSE, filter = TagFilter("^(?!.*(Sentry|App)).*")))
+            Timber.plant(SentryEventTree(Log.ASSERT, filter = TagFilter("^(?!.*(Sentry|App)).*")))
         }
     }
 }

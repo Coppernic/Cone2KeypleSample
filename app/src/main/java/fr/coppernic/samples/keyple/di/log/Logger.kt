@@ -1,4 +1,4 @@
-package fr.coppernic.samples.cone2.keyple.di.log
+package fr.coppernic.samples.keyple.di.log
 
 import org.koin.core.KoinApplication
 import org.koin.core.logger.KOIN_TAG
@@ -21,18 +21,19 @@ class TimberLogger(level: Level = Level.INFO) : Logger(level) {
             Level.DEBUG -> Timber.tag(KOIN_TAG).d(msg)
             Level.INFO -> Timber.tag(KOIN_TAG).i(msg)
             Level.ERROR -> Timber.tag(KOIN_TAG).e(msg)
+            Level.NONE -> {
+            }
         }
     }
 }
-
 
 /**
  * Setup Android Logger for Koin
  * @param level
  */
 fun KoinApplication.timberLogger(
-        level: Level = Level.INFO
+    level: Level = Level.INFO
 ): KoinApplication {
-    KoinApplication.logger = TimberLogger(level)
+    logger(TimberLogger(level))
     return this
 }

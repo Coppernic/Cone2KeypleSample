@@ -1,4 +1,4 @@
-package fr.coppernic.samples.cone2.keyple.home
+package fr.coppernic.samples.keyple.home
 
 
 /**

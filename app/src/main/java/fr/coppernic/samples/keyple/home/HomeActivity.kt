@@ -1,4 +1,4 @@
-package fr.coppernic.samples.cone2.keyple.home
+package fr.coppernic.samples.keyple.home
 
 import android.graphics.Color
 import android.os.Bundle
@@ -8,18 +8,31 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
-import fr.coppernic.samples.cone2.keyple.R
-import kotlinx.android.synthetic.main.activity_main.*
+import fr.coppernic.samples.keyple.R
+import fr.coppernic.samples.keyple.databinding.ActivityMainBinding
 import org.eclipse.keyple.calypso.command.po.parser.ReadDataStructure
 import org.eclipse.keyple.calypso.command.po.parser.ReadRecordsRespPars
 import org.eclipse.keyple.calypso.command.sam.SamRevision.C1
-import org.eclipse.keyple.calypso.transaction.*
+import org.eclipse.keyple.calypso.transaction.CalypsoPo
+import org.eclipse.keyple.calypso.transaction.CalypsoSam
+import org.eclipse.keyple.calypso.transaction.PoResource
+import org.eclipse.keyple.calypso.transaction.PoSelectionRequest
+import org.eclipse.keyple.calypso.transaction.PoSelector
+import org.eclipse.keyple.calypso.transaction.PoTransaction
+import org.eclipse.keyple.calypso.transaction.SamResource
+import org.eclipse.keyple.calypso.transaction.SamSelectionRequest
+import org.eclipse.keyple.calypso.transaction.SamSelector
+import org.eclipse.keyple.calypso.transaction.SecuritySettings
 import org.eclipse.keyple.core.selection.SeSelection
 import org.eclipse.keyple.core.seproxy.ChannelControl
 import org.eclipse.keyple.core.seproxy.SeProxyService
 import org.eclipse.keyple.core.seproxy.SeReader
 import org.eclipse.keyple.core.seproxy.SeSelector
-import org.eclipse.keyple.core.seproxy.event.*
+import org.eclipse.keyple.core.seproxy.event.AbstractDefaultSelectionsResponse
+import org.eclipse.keyple.core.seproxy.event.ObservablePlugin
+import org.eclipse.keyple.core.seproxy.event.ObservableReader
+import org.eclipse.keyple.core.seproxy.event.PluginEvent
+import org.eclipse.keyple.core.seproxy.event.ReaderEvent
 import org.eclipse.keyple.core.seproxy.exception.KeyplePluginInstantiationException
 import org.eclipse.keyple.core.seproxy.exception.KeypleReaderException
 import org.eclipse.keyple.core.seproxy.protocol.SeCommonProtocols
@@ -38,41 +51,43 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var seProxyService: SeProxyService
     private lateinit var plugin: ObservablePlugin
     // RFID reader
-    private lateinit var seReader: SeReader
+    private var seReader: SeReader? = null
     // SAM reader
-    private lateinit var samReader: SeReader
-    private lateinit var samResource: SamResource
+    private var samReader: SeReader? = null
+    private var samResource: SamResource? = null
+
+    private lateinit var binding: ActivityMainBinding
 
     private val pluginObserver = ObservablePlugin.PluginObserver { pluginEvent ->
         when (pluginEvent.eventType) {
 
             PluginEvent.EventType.READER_CONNECTED -> {
-                appendColoredText(tvLogs,
+                appendColoredText(binding.tvLogs,
                         "Readers have been connected",
                         Color.BLUE)
-                appendColoredText(tvLogs, "\n", Color.BLACK)
+                appendColoredText(binding.tvLogs, "\n", Color.BLACK)
                 try {
                     initReaders()
                 } catch (ise: IllegalStateException) {
-                                            appendColoredText(tvLogs,
+                                            appendColoredText(binding.tvLogs,
                                                     ise.message!!,
                                                     Color.RED)
                 }
 
-                appendColoredText(tvLogs,
+                appendColoredText(binding.tvLogs,
                         LINE_SEPARATOR,
                         Color.BLACK)
 
-                (seReader as ObservableReader).startSeDetection(ObservableReader.PollingMode.REPEATING)
+                (seReader as? ObservableReader)?.startSeDetection(ObservableReader.PollingMode.REPEATING)
 
                 enableSwPower(true)
             }
             PluginEvent.EventType.READER_DISCONNECTED -> {
-                appendColoredText(tvLogs,
+                appendColoredText(binding.tvLogs,
                         "Readers have been disconnected",
                         Color.BLUE)
-                appendColoredText(tvLogs, "\n", Color.BLACK)
-                appendColoredText(tvLogs,
+                appendColoredText(binding.tvLogs, "\n", Color.BLACK)
+                appendColoredText(binding.tvLogs,
                         LINE_SEPARATOR,
                         Color.BLACK)
                 enableSwPower(true)
@@ -88,30 +103,30 @@ class HomeActivity : AppCompatActivity() {
             when (readerEvent.eventType) {
                 ReaderEvent.EventType.TIMEOUT_ERROR -> TODO()
                 ReaderEvent.EventType.SE_INSERTED -> {
-                    appendColoredText(tvLogs,
+                    appendColoredText(binding.tvLogs,
                             R.string.smart_card_detected,
                             Color.GREEN)
-                    appendColoredText(tvLogs,
+                    appendColoredText(binding.tvLogs,
                             LINE_SEPARATOR,
                             Color.BLACK)
 
                     runCalypsoTransaction()
                 }
                 ReaderEvent.EventType.SE_MATCHED -> {
-                    appendColoredText(tvLogs,
+                    appendColoredText(binding.tvLogs,
                             R.string.se_matched,
                             Color.GREEN)
-                    appendColoredText(tvLogs,
+                    appendColoredText(binding.tvLogs,
                             LINE_SEPARATOR,
                             Color.BLACK)
 
                     runCalypsoTransaction()
                 }
                 ReaderEvent.EventType.SE_REMOVED -> {
-                    appendColoredText(tvLogs,
+                    appendColoredText(binding.tvLogs,
                             R.string.smart_card_removed,
                             Color.RED)
-                    appendColoredText(tvLogs,
+                    appendColoredText(binding.tvLogs,
                             LINE_SEPARATOR,
                             Color.BLACK)
                 }
@@ -157,28 +172,31 @@ class HomeActivity : AppCompatActivity() {
             Timber.d("selectionsResult.hasActiveSelection")
             val matchingSelection = selectionsResult.activeSelection
 
-            tvLogs.append("The selection of the PO has succeeded.\n")
+            binding.tvLogs.append("The selection of the PO has succeeded.\n")
             /* Go on with the reading of the first record of the EventLog file */
-            tvLogs.append(" ---- \n")
-            tvLogs.append("2nd PO exchange: \n")
-            tvLogs.append("open and close a secure session to perform authentication.\n")
-            tvLogs.append(" ---- \n")
+            binding.tvLogs.append(" ---- \n")
+            binding.tvLogs.append("2nd PO exchange: \n")
+            binding.tvLogs.append("open and close a secure session to perform authentication.\n")
+            binding.tvLogs.append(" ---- \n")
 
             val calypsoPo = matchingSelection.matchingSe as CalypsoPo
 
-            val poTransaction = PoTransaction(PoResource(seReader, calypsoPo),
-                    samResource, SecuritySettings())
+            val poTransaction = PoTransaction(
+                PoResource(seReader, calypsoPo),
+                    samResource, SecuritySettings()
+            )
 
             /*
              * Prepare the reading order and keep the associated parser for later use once the
              * transaction has been processed.
              */
             val readEventLogParserIndex = poTransaction.prepareReadRecordsCmd(
-                    CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
-                    CalypsoClassicInfo.RECORD_NUMBER_1,
+                CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
+                CalypsoClassicInfo.RECORD_NUMBER_1,
                     String.format("EventLog (SFI=%02X, recnbr=%d))",
-                            CalypsoClassicInfo.SFI_EventLog,
-                            CalypsoClassicInfo.RECORD_NUMBER_1))
+                        CalypsoClassicInfo.SFI_EventLog,
+                        CalypsoClassicInfo.RECORD_NUMBER_1
+                    ))
 
             /*
              * Open Session for the debit key
@@ -190,7 +208,7 @@ class HomeActivity : AppCompatActivity() {
             check(poProcessStatus) { "processingOpening failure.\n" }
 
             if (!poTransaction.wasRatified()) {
-                appendColoredText(tvLogs,
+                appendColoredText(binding.tvLogs,
                         "Previous Secure Session was not ratified.\n",
                         Color.RED)
             }
@@ -199,11 +217,12 @@ class HomeActivity : AppCompatActivity() {
              * transaction has been processed.
              */
             val readEventLogParserIndexBis = poTransaction.prepareReadRecordsCmd(
-                    CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
-                    CalypsoClassicInfo.RECORD_NUMBER_1,
+                CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
+                CalypsoClassicInfo.RECORD_NUMBER_1,
                     String.format("EventLog (SFI=%02X, recnbr=%d))",
-                            CalypsoClassicInfo.SFI_EventLog,
-                            CalypsoClassicInfo.RECORD_NUMBER_1))
+                        CalypsoClassicInfo.SFI_EventLog,
+                        CalypsoClassicInfo.RECORD_NUMBER_1
+                    ))
 
             poProcessStatus = poTransaction.processPoCommandsInSession()
 
@@ -213,14 +232,14 @@ class HomeActivity : AppCompatActivity() {
             val eventLog = (poTransaction.getResponseParser(readEventLogParserIndexBis) as ReadRecordsRespPars).records[CalypsoClassicInfo.RECORD_NUMBER_1.toInt()]
 
             /* Log the result */
-            tvLogs.append("EventLog file data: " + ByteArrayUtil.toHex(eventLog) + "\n")
+            binding.tvLogs.append("EventLog file data: " + ByteArrayUtil.toHex(eventLog) + "\n")
 
             check(poProcessStatus) { "processPoCommandsInSession failure.\n" }
 
             /*
              * Closes the Secure Session.
              */
-            tvLogs.append("PO Calypso session: Closing\n")
+            binding.tvLogs.append("PO Calypso session: Closing\n")
 
 
             /*
@@ -230,26 +249,27 @@ class HomeActivity : AppCompatActivity() {
 
             check(poProcessStatus) { "processClosing failure.\n" }
 
-            tvLogs.append(" ---- \n")
-            tvLogs.append("End of the Calypso PO processing.\n")
-            tvLogs.append(" ---- \n")
+            binding.tvLogs.append(" ---- \n")
+            binding.tvLogs.append("End of the Calypso PO processing.\n")
+            binding.tvLogs.append(" ---- \n")
         } else run {
-            appendColoredText(tvLogs,
+            appendColoredText(binding.tvLogs,
                     "The selection of the PO has failed.",
                     Color.RED)
         }
 
         // Reader is now in card detection mode
         Timber.d("notifySeProcessed")
-        (seReader as ObservableReader).notifySeProcessed()
+        (seReader as? ObservableReader)?.notifySeProcessed()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Manages power switch
-        swPower.setOnCheckedChangeListener { _, isChecked ->
+        binding.swPower.setOnCheckedChangeListener { _, isChecked ->
             enableSwPower(false)
             powerReaders(isChecked)
         }
@@ -258,7 +278,7 @@ class HomeActivity : AppCompatActivity() {
         try {
             createPlugin(Cone2Factory())
         } catch (e: KeyplePluginInstantiationException) {
-            appendColoredText(tvLogs, e.message!!, Color.RED)
+            appendColoredText(binding.tvLogs, e.message!!, Color.RED)
         }
     }
 
@@ -271,7 +291,7 @@ class HomeActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         plugin.removeObserver(pluginObserver)
-        (seReader as ObservableReader).removeObserver(readerObserver)
+        (seReader as? ObservableReader)?.removeObserver(readerObserver)
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -279,13 +299,10 @@ class HomeActivity : AppCompatActivity() {
         return true
     }
 
-    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        val id = item!!.itemId
-
-        if (id == R.id.action_clear_all) {
-            tvLogs.text = ""
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.action_clear_all) {
+            binding.tvLogs.text = ""
         }
-
         return super.onOptionsItemSelected(item)
     }
 
@@ -311,8 +328,8 @@ class HomeActivity : AppCompatActivity() {
     private fun initReaders() {
         try {
             seReader = plugin.readers.last()
-            (seReader as ObservableReader).addObserver(this@HomeActivity.readerObserver)
-        } catch (e: KeypleReaderException) {
+            (seReader as? ObservableReader)?.addObserver(this@HomeActivity.readerObserver)
+        } catch (e: Exception) {
             e.printStackTrace()
         }
 
@@ -354,7 +371,7 @@ class HomeActivity : AppCompatActivity() {
      * Runs Calypso simple read transaction
      */
     private fun runCalypsoTransaction(defaultSelectionsResponse: AbstractDefaultSelectionsResponse) {
-        appendColoredText(tvLogs, LINE_SEPARATOR, Color.BLACK)
+        appendColoredText(binding.tvLogs, LINE_SEPARATOR, Color.BLACK)
     }
 
     /**
@@ -395,7 +412,7 @@ class HomeActivity : AppCompatActivity() {
 
     private fun enableSwPower (on: Boolean) {
         runOnUiThread {
-            swPower.isEnabled = on
+            binding.swPower.isEnabled = on
         }
     }
 }

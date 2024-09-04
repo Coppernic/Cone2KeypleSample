@@ -1,4 +1,4 @@
-package fr.coppernic.samples.cone2.keyple.di.modules
+package fr.coppernic.samples.keyple.di.modules
 
 import org.koin.dsl.module
 
