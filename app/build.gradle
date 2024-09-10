@@ -27,7 +27,7 @@ android {
     defaultConfig {
         applicationId "fr.coppernic.sample.keyple"
         minSdkVersion 27
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode versioning.info.versionCode
         versionName versioning.info.display
 
@@ -89,9 +89,9 @@ dependencies {
     implementation 'fr.coppernic.sdk.core:CpcCore:2.2.6'
 
     // Keyple
-    implementation group: 'org.eclipse.keyple', name: 'keyple-java-core', version: '0.8.0-20200103-SNAPSHOT'
-    implementation group: 'org.eclipse.keyple', name: 'keyple-java-calypso', version: '0.8.0-20200103-SNAPSHOT'
-    implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.0-20200116'
+    //implementation group: 'org.eclipse.keyple', name: 'keyple-java-core', version: '0.8.0-20200103-SNAPSHOT'
+    //implementation group: 'org.eclipse.keyple', name: 'keyple-java-calypso', version: '0.8.0-20200103-SNAPSHOT'
+    implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.1-20240910'
 
     // Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
@@ -105,9 +105,6 @@ dependencies {
     // Koin
     implementation "io.insert-koin:koin-android:$koin_version"
     implementation "io.insert-koin:koin-androidx-workmanager:$koin_version"
-
-    // Sentry
-    implementation 'io.sentry:sentry-android:1.7.10'
 
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.hamcrest:hamcrest:2.2'

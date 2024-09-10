@@ -24,6 +24,7 @@ import org.eclipse.keyple.calypso.transaction.SamSelectionRequest
 import org.eclipse.keyple.calypso.transaction.SamSelector
 import org.eclipse.keyple.calypso.transaction.SecuritySettings
 import org.eclipse.keyple.core.selection.SeSelection
+import org.eclipse.keyple.core.selection.SelectionsResult
 import org.eclipse.keyple.core.seproxy.ChannelControl
 import org.eclipse.keyple.core.seproxy.SeProxyService
 import org.eclipse.keyple.core.seproxy.SeReader
@@ -166,9 +167,13 @@ class HomeActivity : AppCompatActivity() {
 
         seSelection.prepareSelection(poSelectionRequest)
 
-        val selectionsResult = seSelection.processExplicitSelection(seReader)
+        val selectionsResult = try {
+            seSelection.processExplicitSelection(seReader)
+        } catch (e: Exception) {
+            null
+        }
 
-        if (selectionsResult.hasActiveSelection()) {
+        if (selectionsResult?.hasActiveSelection() == true) {
             Timber.d("selectionsResult.hasActiveSelection")
             val matchingSelection = selectionsResult.activeSelection
 
