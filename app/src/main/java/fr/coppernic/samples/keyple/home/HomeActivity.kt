@@ -138,7 +138,7 @@ class HomeActivity : AppCompatActivity() {
     }
 
 
-
+    //https://github.com/eclipse-keyple/keyple-cpp/blob/master/docs/KeypleCalypso_UserGuide.md
     private fun runCalypsoTransaction() {
         Timber.d("runCalypsoTransation")
 
@@ -153,7 +153,8 @@ class HomeActivity : AppCompatActivity() {
          * Calypso selection: configures a PoSelectionRequest with all the desired attributes to
          * make the selection and read additional information afterwards
          */
-        val AID = "A0000004040125090101"
+        //val AID = "A0000004040125090101"
+        val AID = "315449432E49434131"
 
         val poSelectionRequest = PoSelectionRequest(
                 PoSelector(SeCommonProtocols.PROTOCOL_ISO14443_4,
@@ -186,77 +187,83 @@ class HomeActivity : AppCompatActivity() {
 
             val calypsoPo = matchingSelection.matchingSe as CalypsoPo
 
-            val poTransaction = PoTransaction(
-                PoResource(seReader, calypsoPo),
+            if (samResource != null) {
+                val poTransaction = PoTransaction(
+                    PoResource(seReader, calypsoPo),
                     samResource, SecuritySettings()
-            )
+                )
 
-            /*
-             * Prepare the reading order and keep the associated parser for later use once the
-             * transaction has been processed.
-             */
-            val readEventLogParserIndex = poTransaction.prepareReadRecordsCmd(
-                CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
-                CalypsoClassicInfo.RECORD_NUMBER_1,
+                /*
+                 * Prepare the reading order and keep the associated parser for later use once the
+                 * transaction has been processed.
+                 */
+                val readEventLogParserIndex = poTransaction.prepareReadRecordsCmd(
+                    CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
+                    CalypsoClassicInfo.RECORD_NUMBER_1,
                     String.format("EventLog (SFI=%02X, recnbr=%d))",
                         CalypsoClassicInfo.SFI_EventLog,
                         CalypsoClassicInfo.RECORD_NUMBER_1
                     ))
 
-            /*
-             * Open Session for the debit key
-             */
-            var poProcessStatus = poTransaction.processOpening(
+                /*
+                 * Open Session for the debit key
+                 */
+                var poProcessStatus = poTransaction.processOpening(
                     PoTransaction.ModificationMode.ATOMIC,
                     PoTransaction.SessionAccessLevel.SESSION_LVL_DEBIT, 0.toByte(), 0.toByte())
 
-            check(poProcessStatus) { "processingOpening failure.\n" }
+                check(poProcessStatus) { "processingOpening failure.\n" }
 
-            if (!poTransaction.wasRatified()) {
-                appendColoredText(binding.tvLogs,
+                if (!poTransaction.wasRatified()) {
+                    appendColoredText(binding.tvLogs,
                         "Previous Secure Session was not ratified.\n",
                         Color.RED)
-            }
-            /*
-             * Prepare the reading order and keep the associated parser for later use once the
-             * transaction has been processed.
-             */
-            val readEventLogParserIndexBis = poTransaction.prepareReadRecordsCmd(
-                CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
-                CalypsoClassicInfo.RECORD_NUMBER_1,
+                }
+                /*
+                 * Prepare the reading order and keep the associated parser for later use once the
+                 * transaction has been processed.
+                 */
+                val readEventLogParserIndexBis = poTransaction.prepareReadRecordsCmd(
+                    CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
+                    CalypsoClassicInfo.RECORD_NUMBER_1,
                     String.format("EventLog (SFI=%02X, recnbr=%d))",
                         CalypsoClassicInfo.SFI_EventLog,
                         CalypsoClassicInfo.RECORD_NUMBER_1
                     ))
 
-            poProcessStatus = poTransaction.processPoCommandsInSession()
+                poProcessStatus = poTransaction.processPoCommandsInSession()
 
-            /*
-                             * Retrieve the data read from the parser updated during the transaction process
-                             */
-            val eventLog = (poTransaction.getResponseParser(readEventLogParserIndexBis) as ReadRecordsRespPars).records[CalypsoClassicInfo.RECORD_NUMBER_1.toInt()]
+                /*
+                                 * Retrieve the data read from the parser updated during the transaction process
+                                 */
+                val eventLog = (poTransaction.getResponseParser(readEventLogParserIndexBis) as ReadRecordsRespPars).records[CalypsoClassicInfo.RECORD_NUMBER_1.toInt()]
 
-            /* Log the result */
-            binding.tvLogs.append("EventLog file data: " + ByteArrayUtil.toHex(eventLog) + "\n")
+                /* Log the result */
+                binding.tvLogs.append("EventLog file data: " + ByteArrayUtil.toHex(eventLog) + "\n")
 
-            check(poProcessStatus) { "processPoCommandsInSession failure.\n" }
+                check(poProcessStatus) { "processPoCommandsInSession failure.\n" }
 
-            /*
-             * Closes the Secure Session.
-             */
-            binding.tvLogs.append("PO Calypso session: Closing\n")
+                /*
+                 * Closes the Secure Session.
+                 */
+                binding.tvLogs.append("PO Calypso session: Closing\n")
 
 
-            /*
-             * A ratification command will be sent (CONTACTLESS_MODE).
-             */
-            poProcessStatus = poTransaction.processClosing(ChannelControl.CLOSE_AFTER)
+                /*
+                 * A ratification command will be sent (CONTACTLESS_MODE).
+                 */
+                poProcessStatus = poTransaction.processClosing(ChannelControl.CLOSE_AFTER)
 
-            check(poProcessStatus) { "processClosing failure.\n" }
+                check(poProcessStatus) { "processClosing failure.\n" }
 
-            binding.tvLogs.append(" ---- \n")
-            binding.tvLogs.append("End of the Calypso PO processing.\n")
-            binding.tvLogs.append(" ---- \n")
+                binding.tvLogs.append(" ---- \n")
+                binding.tvLogs.append("End of the Calypso PO processing.\n")
+                binding.tvLogs.append(" ---- \n")
+            } else {
+                binding.tvLogs.append("SAM not available, authentication cancelled.\n")
+                binding.tvLogs.append(" ---- \n")
+            }
+
         } else run {
             appendColoredText(binding.tvLogs,
                     "The selection of the PO has failed.",
