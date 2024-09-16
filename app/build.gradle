@@ -84,9 +84,9 @@ dependencies {
     kapt "androidx.lifecycle:lifecycle-compiler:2.2.0-rc03"
 
     // Coppernic
-    implementation 'fr.coppernic.sdk.ask:CpcAsk:3.5.8-keyple'
-    implementation 'fr.coppernic.sdk.cpcutils:CpcUtilsLib:6.19.1'
-    implementation 'fr.coppernic.sdk.core:CpcCore:2.2.6'
+    implementation 'fr.coppernic.sdk.ask:CpcAsk:4.2.0'
+    implementation 'fr.coppernic.sdk.cpcutils:CpcUtilsLib:6.21.0'
+    implementation 'fr.coppernic.sdk.core:CpcCore:3.3.0'
 
     // Keyple
     implementation group: 'org.eclipse.keyple', name: 'keyple-android-plugin-cone2', version:'0.8.1-20240910'

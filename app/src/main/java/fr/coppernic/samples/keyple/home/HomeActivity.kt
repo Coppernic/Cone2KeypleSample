@@ -1,5 +1,6 @@
 package fr.coppernic.samples.keyple.home
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Spannable
@@ -8,10 +9,12 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.helper.widget.MotionEffect.AUTO
 import fr.coppernic.samples.keyple.R
 import fr.coppernic.samples.keyple.databinding.ActivityMainBinding
 import org.eclipse.keyple.calypso.command.po.parser.ReadDataStructure
 import org.eclipse.keyple.calypso.command.po.parser.ReadRecordsRespPars
+import org.eclipse.keyple.calypso.command.sam.SamRevision
 import org.eclipse.keyple.calypso.command.sam.SamRevision.C1
 import org.eclipse.keyple.calypso.transaction.CalypsoPo
 import org.eclipse.keyple.calypso.transaction.CalypsoSam
@@ -51,8 +54,10 @@ class HomeActivity : AppCompatActivity() {
 
     private lateinit var seProxyService: SeProxyService
     private lateinit var plugin: ObservablePlugin
+
     // RFID reader
     private var seReader: SeReader? = null
+
     // SAM reader
     private var samReader: SeReader? = null
     private var samResource: SamResource? = null
@@ -63,36 +68,48 @@ class HomeActivity : AppCompatActivity() {
         when (pluginEvent.eventType) {
 
             PluginEvent.EventType.READER_CONNECTED -> {
-                appendColoredText(binding.tvLogs,
-                        "Readers have been connected",
-                        Color.BLUE)
+                appendColoredText(
+                    binding.tvLogs,
+                    "Readers have been connected",
+                    Color.BLUE
+                )
                 appendColoredText(binding.tvLogs, "\n", Color.BLACK)
                 try {
                     initReaders()
                 } catch (ise: IllegalStateException) {
-                                            appendColoredText(binding.tvLogs,
-                                                    ise.message!!,
-                                                    Color.RED)
+                    appendColoredText(
+                        binding.tvLogs,
+                        ise.message!!,
+                        Color.RED
+                    )
                 }
 
-                appendColoredText(binding.tvLogs,
-                        LINE_SEPARATOR,
-                        Color.BLACK)
+                appendColoredText(
+                    binding.tvLogs,
+                    LINE_SEPARATOR,
+                    Color.BLACK
+                )
 
                 (seReader as? ObservableReader)?.startSeDetection(ObservableReader.PollingMode.REPEATING)
 
                 enableSwPower(true)
             }
+
             PluginEvent.EventType.READER_DISCONNECTED -> {
-                appendColoredText(binding.tvLogs,
-                        "Readers have been disconnected",
-                        Color.BLUE)
+                appendColoredText(
+                    binding.tvLogs,
+                    "Readers have been disconnected",
+                    Color.BLUE
+                )
                 appendColoredText(binding.tvLogs, "\n", Color.BLACK)
-                appendColoredText(binding.tvLogs,
-                        LINE_SEPARATOR,
-                        Color.BLACK)
+                appendColoredText(
+                    binding.tvLogs,
+                    LINE_SEPARATOR,
+                    Color.BLACK
+                )
                 enableSwPower(true)
             }
+
             null -> {
 
             }
@@ -104,33 +121,48 @@ class HomeActivity : AppCompatActivity() {
             when (readerEvent.eventType) {
                 ReaderEvent.EventType.TIMEOUT_ERROR -> TODO()
                 ReaderEvent.EventType.SE_INSERTED -> {
-                    appendColoredText(binding.tvLogs,
-                            R.string.smart_card_detected,
-                            Color.GREEN)
-                    appendColoredText(binding.tvLogs,
-                            LINE_SEPARATOR,
-                            Color.BLACK)
+                    appendColoredText(
+                        binding.tvLogs,
+                        R.string.smart_card_detected,
+                        Color.GREEN
+                    )
+                    appendColoredText(
+                        binding.tvLogs,
+                        LINE_SEPARATOR,
+                        Color.BLACK
+                    )
 
                     runCalypsoTransaction()
                 }
+
                 ReaderEvent.EventType.SE_MATCHED -> {
-                    appendColoredText(binding.tvLogs,
-                            R.string.se_matched,
-                            Color.GREEN)
-                    appendColoredText(binding.tvLogs,
-                            LINE_SEPARATOR,
-                            Color.BLACK)
+                    appendColoredText(
+                        binding.tvLogs,
+                        R.string.se_matched,
+                        Color.GREEN
+                    )
+                    appendColoredText(
+                        binding.tvLogs,
+                        LINE_SEPARATOR,
+                        Color.BLACK
+                    )
 
                     runCalypsoTransaction()
                 }
+
                 ReaderEvent.EventType.SE_REMOVED -> {
-                    appendColoredText(binding.tvLogs,
-                            R.string.smart_card_removed,
-                            Color.RED)
-                    appendColoredText(binding.tvLogs,
-                            LINE_SEPARATOR,
-                            Color.BLACK)
+                    appendColoredText(
+                        binding.tvLogs,
+                        R.string.smart_card_removed,
+                        Color.RED
+                    )
+                    appendColoredText(
+                        binding.tvLogs,
+                        LINE_SEPARATOR,
+                        Color.BLACK
+                    )
                 }
+
                 null -> {
                 }
             }
@@ -139,6 +171,7 @@ class HomeActivity : AppCompatActivity() {
 
 
     //https://github.com/eclipse-keyple/keyple-cpp/blob/master/docs/KeypleCalypso_UserGuide.md
+    @SuppressLint("DefaultLocale")
     private fun runCalypsoTransaction() {
         Timber.d("runCalypsoTransation")
 
@@ -153,14 +186,19 @@ class HomeActivity : AppCompatActivity() {
          * Calypso selection: configures a PoSelectionRequest with all the desired attributes to
          * make the selection and read additional information afterwards
          */
-        //val AID = "A0000004040125090101"
-        val AID = "315449432E49434131"
 
+        // Couple SAM "TEST-F5v2" & carte "optile Carte Contrôleur 58300854"
+        val AID = CalypsoClassicInfo.AID
         val poSelectionRequest = PoSelectionRequest(
-                PoSelector(SeCommonProtocols.PROTOCOL_ISO14443_4,
-                        null,
-                        PoSelector.PoAidSelector(SeSelector.AidSelector.IsoAid(AID), PoSelector.InvalidatedPo.REJECT),
-                            "AID: $AID")
+            PoSelector(
+                SeCommonProtocols.PROTOCOL_ISO14443_4,
+                null,
+                PoSelector.PoAidSelector(
+                    SeSelector.AidSelector.IsoAid(AID),
+                    PoSelector.InvalidatedPo.REJECT
+                ),
+                "AID: $AID"
+            )
         )
 
         // Initializes the selection process
@@ -175,6 +213,7 @@ class HomeActivity : AppCompatActivity() {
         }
 
         if (selectionsResult?.hasActiveSelection() == true) {
+            var poProcessStatus = false
             Timber.d("selectionsResult.hasActiveSelection")
             val matchingSelection = selectionsResult.activeSelection
 
@@ -197,27 +236,42 @@ class HomeActivity : AppCompatActivity() {
                  * Prepare the reading order and keep the associated parser for later use once the
                  * transaction has been processed.
                  */
-                val readEventLogParserIndex = poTransaction.prepareReadRecordsCmd(
+                poTransaction.prepareReadRecordsCmd(
                     CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
                     CalypsoClassicInfo.RECORD_NUMBER_1,
-                    String.format("EventLog (SFI=%02X, recnbr=%d))",
+                    String.format(
+                        "EventLog (SFI=%02X, recnbr=%d))",
                         CalypsoClassicInfo.SFI_EventLog,
                         CalypsoClassicInfo.RECORD_NUMBER_1
-                    ))
+                    )
+                )
 
                 /*
                  * Open Session for the debit key
                  */
-                var poProcessStatus = poTransaction.processOpening(
-                    PoTransaction.ModificationMode.ATOMIC,
-                    PoTransaction.SessionAccessLevel.SESSION_LVL_DEBIT, 0.toByte(), 0.toByte())
+                try {
+                    poProcessStatus = poTransaction.processOpening(
+                        PoTransaction.ModificationMode.ATOMIC,
+                        PoTransaction.SessionAccessLevel.SESSION_LVL_DEBIT, 0.toByte(), 0.toByte()
+                    )
+                    check(poProcessStatus) { "processingOpening failure.\n" }
+                } catch (e: Exception) {
+                    binding.tvLogs.append(" Error : ${e.localizedMessage} \n")
+                    e.printStackTrace()
+                }
 
-                check(poProcessStatus) { "processingOpening failure.\n" }
-
-                if (!poTransaction.wasRatified()) {
-                    appendColoredText(binding.tvLogs,
+                val ratified = try {
+                    poTransaction.wasRatified()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    false
+                }
+                if (!ratified) {
+                    appendColoredText(
+                        binding.tvLogs,
                         "Previous Secure Session was not ratified.\n",
-                        Color.RED)
+                        Color.RED
+                    )
                 }
                 /*
                  * Prepare the reading order and keep the associated parser for later use once the
@@ -226,36 +280,45 @@ class HomeActivity : AppCompatActivity() {
                 val readEventLogParserIndexBis = poTransaction.prepareReadRecordsCmd(
                     CalypsoClassicInfo.SFI_EventLog, ReadDataStructure.SINGLE_RECORD_DATA,
                     CalypsoClassicInfo.RECORD_NUMBER_1,
-                    String.format("EventLog (SFI=%02X, recnbr=%d))",
+                    String.format(
+                        "EventLog (SFI=%02X, recnbr=%d))",
                         CalypsoClassicInfo.SFI_EventLog,
                         CalypsoClassicInfo.RECORD_NUMBER_1
-                    ))
+                    )
+                )
 
-                poProcessStatus = poTransaction.processPoCommandsInSession()
-
-                /*
-                                 * Retrieve the data read from the parser updated during the transaction process
-                                 */
-                val eventLog = (poTransaction.getResponseParser(readEventLogParserIndexBis) as ReadRecordsRespPars).records[CalypsoClassicInfo.RECORD_NUMBER_1.toInt()]
-
-                /* Log the result */
-                binding.tvLogs.append("EventLog file data: " + ByteArrayUtil.toHex(eventLog) + "\n")
-
-                check(poProcessStatus) { "processPoCommandsInSession failure.\n" }
+                try {
+                    poProcessStatus = poTransaction.processPoCommandsInSession()
+                    /*
+                     * Retrieve the data read from the parser updated during the transaction process
+                     */
+                    (poTransaction.getResponseParser(readEventLogParserIndexBis) as? ReadRecordsRespPars)?.records?.get(
+                        CalypsoClassicInfo.RECORD_NUMBER_1.toInt()
+                    )?.let { eventLog ->
+                        /* Log the result */
+                        binding.tvLogs.append("EventLog file data: " + ByteArrayUtil.toHex(eventLog) + "\n")
+                    }
+                    check(poProcessStatus) { "processPoCommandsInSession failure.\n" }
+                } catch (e: Exception) {
+                    binding.tvLogs.append(" Error : ${e.localizedMessage} \n")
+                    e.printStackTrace()
+                }
 
                 /*
                  * Closes the Secure Session.
                  */
                 binding.tvLogs.append("PO Calypso session: Closing\n")
 
-
                 /*
                  * A ratification command will be sent (CONTACTLESS_MODE).
                  */
-                poProcessStatus = poTransaction.processClosing(ChannelControl.CLOSE_AFTER)
-
-                check(poProcessStatus) { "processClosing failure.\n" }
-
+                try {
+                    poProcessStatus = poTransaction.processClosing(ChannelControl.CLOSE_AFTER)
+                    check(poProcessStatus) { "processClosing failure.\n" }
+                } catch (e: Exception) {
+                    binding.tvLogs.append(" Error : ${e.localizedMessage} \n")
+                    e.printStackTrace()
+                }
                 binding.tvLogs.append(" ---- \n")
                 binding.tvLogs.append("End of the Calypso PO processing.\n")
                 binding.tvLogs.append(" ---- \n")
@@ -265,9 +328,11 @@ class HomeActivity : AppCompatActivity() {
             }
 
         } else run {
-            appendColoredText(binding.tvLogs,
-                    "The selection of the PO has failed.",
-                    Color.RED)
+            appendColoredText(
+                binding.tvLogs,
+                "The selection of the PO has failed.",
+                Color.RED
+            )
         }
 
         // Reader is now in card detection mode
@@ -332,7 +397,7 @@ class HomeActivity : AppCompatActivity() {
     /**
      * Powers on/off readers
      */
-    private fun powerReaders(on:Boolean) {
+    private fun powerReaders(on: Boolean) {
         (plugin as Cone2Plugin).power(this, on)
     }
 
@@ -361,18 +426,18 @@ class HomeActivity : AppCompatActivity() {
          * logical channels and keep it open
          */
         val samSelection = SeSelection()
-
-        val samSelector = SamSelector(C1, ".*", "Selection SAM C1")
+        val samSelector = SamSelector(SamRevision.AUTO, ".*", "Selection SAM C1")
 
         /* Prepare selector, ignore AbstractMatchingSe here */
         samSelection.prepareSelection(SamSelectionRequest(samSelector))
-        val calypsoSam: CalypsoSam
+        val calypsoSam: CalypsoSam?
 
         try {
-            calypsoSam = samSelection.processExplicitSelection(samReader)
-                    .activeSelection.matchingSe as CalypsoSam
-            check(calypsoSam.isSelected) { "Unable to open a logical channel for SAM!" }
-        } catch (e: KeypleReaderException) {
+            calypsoSam = samSelection.processExplicitSelection(samReader).let { result ->
+                result?.activeSelection?.matchingSe as? CalypsoSam
+            }
+            check(calypsoSam?.isSelected == true) { "Unable to open a logical channel for SAM!" }
+        } catch (e: Exception) {
             throw IllegalStateException("Reader exception: " + e.message)
         }
 
@@ -422,7 +487,7 @@ class HomeActivity : AppCompatActivity() {
         }
     }
 
-    private fun enableSwPower (on: Boolean) {
+    private fun enableSwPower(on: Boolean) {
         runOnUiThread {
             binding.swPower.isEnabled = on
         }

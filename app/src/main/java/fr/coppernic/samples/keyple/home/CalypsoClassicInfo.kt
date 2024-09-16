@@ -19,9 +19,9 @@ package fr.coppernic.samples.keyple.home
 class CalypsoClassicInfo {
     companion object {
         /** Calypso default AID  */
-        val AID = "A0000004040125090101"
+        //val AID = "A0000004040125090101"
         /// ** 1TIC.ICA AID */
-        // public final static String AID = "315449432E494341";
+        val AID = "315449432E494341";
         /** SAM C1 regular expression: platform, version and serial number values are ignored  */
         val SAM_C1_ATR_REGEX = "3B3F9600805A[0-9a-fA-F]{2}80C1[0-9a-fA-F]{14}829000"
 
