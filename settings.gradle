@@ -15,6 +15,6 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'C-One² Keyple Sample'
+rootProject.name = 'Coppernic Keyple Sample'
 
 include ':app'
