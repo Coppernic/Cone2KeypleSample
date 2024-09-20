@@ -1,2 +1,3 @@
-# Cone2KeypleSample
-Sample application for demonstrating Keyple on the C-One² device
+# Coppernic Keyple Sample
+Sample application for demonstrating Keyple on the C-One² and AccessER devices
+
